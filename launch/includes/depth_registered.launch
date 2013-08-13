@@ -25,7 +25,7 @@
     <remap from="rgb/camera_info"             to="$(arg rgb)/camera_info" />
     <remap from="depth/camera_info"           to="$(arg depth)/camera_info" />
     <remap from="depth/image_rect"            to="$(arg depth)/image_rect_raw" />
-    <remap from="depth_registered/image_rect" to="$(arg depth_registered)/image_rect_raw" />
+    <remap from="depth_registered/image_rect" to="$(arg depth_registered)/sw_registered/image_rect_raw" />
   </node>
 
   <!-- for device enabled registration, simply rectify the raw image -->
@@ -33,21 +33,32 @@
         args="load image_proc/rectify $(arg manager) $(arg bond)"
         respawn="$(arg respawn)">
     <remap from="image_mono"  to="$(arg depth_registered)/image_raw" />
-    <remap from="image_rect"  to="$(arg depth_registered)/image_rect_raw" />
+    <remap from="image_rect"  to="$(arg depth_registered)/hw_registered/image_rect_raw" />
     <!-- Use nearest neighbor (0) interpolation so we don't streak across
          depth boundaries -->
     <param name="interpolation" value="0" />
   </node>
 
-  <!-- Instead publish registered XYZRGB point cloud -->
-  <node pkg="nodelet" type="nodelet" name="points_xyzrgb_$(arg suffix)"
+  <!-- Publish registered XYZRGB point cloud with software registered input -->
+  <node pkg="nodelet" type="nodelet" name="points_xyzrgb_sw_registered"
         args="load depth_image_proc/point_cloud_xyzrgb $(arg manager) $(arg bond)"
         respawn="$(arg respawn)">
     <!-- Explicit topic remappings, shouldn't need all of these -->
     <remap from="rgb/image_rect_color"        to="$(arg rgb)/image_rect_color" />
     <remap from="rgb/camera_info"             to="$(arg rgb)/camera_info" />
-    <remap from="depth_registered/image_rect" to="$(arg depth_registered)/image_rect_raw" />
+    <remap from="depth_registered/image_rect" to="$(arg depth_registered)/sw_registered/image_rect_raw" />
     <remap from="depth_registered/points"     to="$(arg depth_registered)/points" />
   </node>
 
+  <!-- Publish registered XYZRGB point cloud with hardware registered input -->
+  <node pkg="nodelet" type="nodelet" name="points_xyzrgb_hw_registered"
+        args="load depth_image_proc/point_cloud_xyzrgb $(arg manager) $(arg bond)"
+        respawn="$(arg respawn)">
+    <!-- Explicit topic remappings, shouldn't need all of these -->
+    <remap from="rgb/image_rect_color"        to="$(arg rgb)/image_rect_color" />
+    <remap from="rgb/camera_info"             to="$(arg rgb)/camera_info" />
+    <remap from="depth_registered/image_rect" to="$(arg depth_registered)/hw_registered/image_rect_raw" />
+    <remap from="depth_registered/points"     to="$(arg depth_registered)/points" />
+  </node>
+  
 </launch>
